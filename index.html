@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хонандаи Пинӣини Хитойӣ</title>
+    <script src="https://unpkg.com/pinyin-pro@3"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px auto;
+            max-width: 800px;
+            background: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        h1 { text-align: center; color: #2c3e50; }
+        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        select, textarea, button {
+            font-size: 16px; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #ddd;
+            width: 100%; box-sizing: border-box;
+        }
+        textarea { min-height: 120px; resize: vertical; }
+        button { background: #3498db; color: white; border: none; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #2980b9; }
+        #clear-btn { background: #e74c3c; }
+        #clear-btn:hover { background: #c0392b; }
+        #output { margin-top: 20px; font-size: 24px; line-height: 2.2; text-align: center; }
+        ruby { ruby-position: over; margin: 0 0.4em; }
+        rt { font-size: 0.65em; color: #555; letter-spacing: 0.05em; }
+        /* Рангҳо барои тонҳо (бо toneType: 'num') */
+        rt[data-tone="1"] { color: #e74c3c; }
+        rt[data-tone="2"] { color: #f39c12; }
+        rt[data-tone="3"] { color: #27ae60; }
+        rt[data-tone="4"] { color: #3498db; }
+        rt[data-tone="5"], rt[data-tone="0"] { color: #95a5a6; }
+        .examples { margin: 15px 0; text-align: center; }
+        .examples button { margin: 5px; background: #2ecc71; font-size: 14px; }
+        .examples button:hover { background: #27ae60; }
+        .fun-message { margin-top: 20px; text-align: center; color: #27ae60; font-style: italic; font-size: 18px; }
+        @media (max-width: 600px) { body { margin: 10px; } h1 { font-size: 1.8em; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="title">Хонандаи Пинӣини Хитойӣ</h1>
+
+        <label for="language" id="lang-label">Забонро интихоб кунед:</label>
+        <select id="language" onchange="changeLanguage()">
+            <option value="tg">Тоҷикӣ</option>
+            <option value="en">English</option>
+            <option value="ru">Русский</option>
+            <option value="zh">中文</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+            <option value="de">Deutsch</option>
+            <option value="it">Italiano</option>
+            <option value="pt">Português</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+            <option value="ar">العربية</option>
+            <option value="hi">हिन्दी</option>
+            <option value="tr">Türkçe</option>
+            <option value="fa">فارسی</option>
+        </select>
+
+        <br><br>
+
+        <label for="input" id="input-label">Матни хитоиро ворид кунед:</label>
+        <textarea id="input" rows="5" placeholder="Масалан: 你好，世界！ 我爱学习中文。"></textarea>
+
+        <div class="examples">
+            Мисолҳо:
+            <button onclick="setExample('你好，世界！')">你好，世界！</button>
+            <button onclick="setExample('我爱学习中文')">我爱学习中文</button>
+            <button onclick="setExample('谢谢你的帮助！')">谢谢你的帮助！</button>
+            <button onclick="setExample('今天天气很好，我们去公园吧。')">今天天气很好，我们去公园吧。</button>
+        </div>
+
+        <button onclick="convertText()" id="convert-btn">Ба пинӣин табдил диҳед</button>
+        <button id="clear-btn" onclick="clearInput()">Тоза кардан</button>
+
+        <div id="output"></div>
+        <div id="fun-message" class="fun-message"></div>
+    </div>
+
+    <script>
+        const translations = {
+            tg: {
+                title: "Хонандаи Пинӣини Хитойӣ",
+                langLabel: "Забонро интихоб кунед:",
+                inputLabel: "Матни хитоиро ворид кунед:",
+                convertBtn: "Ба пинӣин табдил диҳед",
+                funMessages: [
+                    "Ха-ха, акнун хитоиро мисли шиновар хонда метавонӣ! 🏊‍♂️",
+                    "Пинияш – ҷодугар! Тонҳо ҳатто хандовар шуданд 🎵",
+                    "Ту акнун устоди забонҳо ҳастӣ! 🌟",
+                    "Офарин! Ҳоло ҳар иероглифро мисли дӯст медонӣ 😎"
+                ]
+            },
+            en: {
+                title: "Chinese Pinyin Reader",
+                langLabel: "Select Language:",
+                inputLabel: "Enter Chinese Text:",
+                convertBtn: "Convert to Pinyin",
+                funMessages: [
+                    "Haha, now you can read Chinese like a pro! 😂",
+                    "Pinyin magic activated! 🎉",
+                    "You're officially a language ninja! 🥷"
+                ]
+            },
+            ru: {
+                title: "Чтец китайских иероглифов с пиньинь",
+                langLabel: "Выберите язык:",
+                inputLabel: "Введите китайский текст:",
+                convertBtn: "Преобразовать в пиньинь",
+                funMessages: [
+                    "Ха-ха, теперь читаешь китайский как профи! 😂",
+                    "Магия пиньинь! 🎉",
+                    "Ты теперь мастер языков! 🌟"
+                ]
+            },
+            // Агар хоҳӣ боқимонда забонҳоро пурра кунӣ — аз коди аввалини худ гирифта илова кун
+            // ҳозир фақат tg, en, ru кор мекунанд, боқимонда ба tg бармегарданд
+        };
+
+        function changeLanguage() {
+            const lang = document.getElementById('language').value;
+            const trans = translations[lang] || translations.tg;
+            document.getElementById('title').textContent = trans.title || "Хонандаи Пинӣини Хитойӣ";
+            document.getElementById('lang-label').textContent = trans.langLabel || "Забонро интихоб кунед:";
+            document.getElementById('input-label').textContent = trans.inputLabel || "Матни хитоиро ворид кунед:";
+            document.getElementById('convert-btn').textContent = trans.convertBtn || "Ба пинӣин табдил диҳед";
+        }
+
+        function setExample(text) {
+            document.getElementById('input').value = text;
+            convertText();
+        }
+
+        function clearInput() {
+            document.getElementById('input').value = '';
+            document.getElementById('output').innerHTML = '';
+            document.getElementById('fun-message').textContent = '';
+        }
+
+        function convertText() {
+            const input = document.getElementById('input').value.trim();
+            const output = document.getElementById('output');
+            const funDiv = document.getElementById('fun-message');
+            const lang = document.getElementById('language').value;
+            const trans = translations[lang] || translations.tg;
+
+            if (!input) {
+                output.innerHTML = '';
+                funDiv.textContent = '';
+                return;
+            }
+
+            try {
+                const htmlOutput = pinyinPro.html(input, {
+                    toneType: 'num',          // барои data-tone → рангҳо кор мекунанд
+                    type: 'html',
+                    nonChinese: 'wrap'
+                });
+                output.innerHTML = htmlOutput;
+
+                const randomFun = trans.funMessages[Math.floor(Math.random() * trans.funMessages.length)];
+                funDiv.textContent = randomFun;
+            } catch (e) {
+                output.innerHTML = '<p style="color:red;">Хато: Матнро дуруст ворид кунед (чинӣ бошад беҳтар аст).</p>';
+            }
+        }
+
+        // Default
+        document.getElementById('language').value = 'tg';
+        changeLanguage();
+    </script>
+</body>
+</html>
