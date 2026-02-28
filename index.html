@@ -3,178 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Хонандаи Пинӣини Хитойӣ</title>
-    <script src="https://unpkg.com/pinyin-pro@3"></script>
+    <title>Pinyin Reader TJ - Омӯзиши чинӣ мисли Duolingo</title>
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.20.0/dist/index.min.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 20px auto;
-            max-width: 800px;
-            background: #f9f9f9;
-            color: #333;
-            line-height: 1.6;
-        }
-        h1 { text-align: center; color: #2c3e50; }
-        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        select, textarea, button {
-            font-size: 16px; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #ddd;
-            width: 100%; box-sizing: border-box;
-        }
-        textarea { min-height: 120px; resize: vertical; }
-        button { background: #3498db; color: white; border: none; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #2980b9; }
-        #clear-btn { background: #e74c3c; }
-        #clear-btn:hover { background: #c0392b; }
-        #output { margin-top: 20px; font-size: 24px; line-height: 2.2; text-align: center; }
-        ruby { ruby-position: over; margin: 0 0.4em; }
-        rt { font-size: 0.65em; color: #555; letter-spacing: 0.05em; }
-        /* Рангҳо барои тонҳо (бо toneType: 'num') */
-        rt[data-tone="1"] { color: #e74c3c; }
-        rt[data-tone="2"] { color: #f39c12; }
-        rt[data-tone="3"] { color: #27ae60; }
-        rt[data-tone="4"] { color: #3498db; }
-        rt[data-tone="5"], rt[data-tone="0"] { color: #95a5a6; }
-        .examples { margin: 15px 0; text-align: center; }
-        .examples button { margin: 5px; background: #2ecc71; font-size: 14px; }
-        .examples button:hover { background: #27ae60; }
-        .fun-message { margin-top: 20px; text-align: center; color: #27ae60; font-style: italic; font-size: 18px; }
-        @media (max-width: 600px) { body { margin: 10px; } h1 { font-size: 1.8em; } }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f0f8ff; margin: 0; }
+        h1, h2 { color: #006400; }
+        #profile { font-size: 18px; margin: 15px 0; padding: 10px; background: #e8f5e9; border-radius: 8px; }
+        textarea { width: 90%; max-width: 700px; height: 120px; padding: 12px; font-size: 20px; margin: 15px auto; display: block; border: 2px solid #ccc; border-radius: 8px; }
+        button { padding: 12px 30px; font-size: 17px; margin: 10px; cursor: pointer; border: none; border-radius: 8px; color: white; }
+        #convertBtn { background: #4CAF50; }
+        #clearBtn { background: #f44336; }
+        #output { font-size: 28px; margin: 25px 0; min-height: 80px; line-height: 1.6; }
+        .lesson { background: #ffffff; border: 1px solid #ddd; padding: 15px; margin: 12px auto; max-width: 700px; border-radius: 8px; cursor: pointer; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .lesson:hover { background: #f1f8e9; }
+        .quiz { display: none; margin: 20px auto; max-width: 700px; }
+        .option { background: #e3f2fd; padding: 12px; margin: 8px auto; border-radius: 6px; cursor: pointer; font-size: 17px; max-width: 500px; }
+        .option:hover { background: #bbdefb; }
+        #error { color: #d32f2f; font-weight: bold; margin: 15px; font-size: 16px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 id="title">Хонандаи Пинӣини Хитойӣ</h1>
-
-        <label for="language" id="lang-label">Забонро интихоб кунед:</label>
-        <select id="language" onchange="changeLanguage()">
-            <option value="tg">Тоҷикӣ</option>
-            <option value="en">English</option>
-            <option value="ru">Русский</option>
-            <option value="zh">中文</option>
-            <option value="fr">Français</option>
-            <option value="es">Español</option>
-            <option value="de">Deutsch</option>
-            <option value="it">Italiano</option>
-            <option value="pt">Português</option>
-            <option value="ja">日本語</option>
-            <option value="ko">한국어</option>
-            <option value="ar">العربية</option>
-            <option value="hi">हिन्दी</option>
-            <option value="tr">Türkçe</option>
-            <option value="fa">فارسی</option>
-        </select>
-
-        <br><br>
-
-        <label for="input" id="input-label">Матни хитоиро ворид кунед:</label>
-        <textarea id="input" rows="5" placeholder="Масалан: 你好，世界！ 我爱学习中文。"></textarea>
-
-        <div class="examples">
-            Мисолҳо:
-            <button onclick="setExample('你好，世界！')">你好，世界！</button>
-            <button onclick="setExample('我爱学习中文')">我爱学习中文</button>
-            <button onclick="setExample('谢谢你的帮助！')">谢谢你的帮助！</button>
-            <button onclick="setExample('今天天气很好，我们去公园吧。')">今天天气很好，我们去公园吧。</button>
-        </div>
-
-        <button onclick="convertText()" id="convert-btn">Ба пинӣин табдил диҳед</button>
-        <button id="clear-btn" onclick="clearInput()">Тоза кардан</button>
-
-        <div id="output"></div>
-        <div id="fun-message" class="fun-message"></div>
+    <h1>Омӯзиши чинӣ мисли Duolingo</h1>
+    
+    <div id="profile">
+        Нуқтаҳо: <span id="xp">0</span>  |  
+        Сатҳ: <span id="level">1</span>  |  
+        Стрик: <span id="streak">0</span> рӯз  |  
+        Дилҳо: <span id="hearts">5</span> ❤️
     </div>
 
+    <h2>Дарсҳоро интихоб кунед</h2>
+    <div class="lesson" onclick="startLesson(0)">Дарси 1: Саломгуӣ ва ибтидо</div>
+    <div class="lesson" onclick="startLesson(1)">Дарси 2: Оила ва дӯстон</div>
+    <!-- Метавонӣ дарсҳои нав илова кунӣ -->
+
+    <div class="quiz" id="quiz">
+        <h2 id="question"></h2>
+        <div id="options"></div>
+        <button onclick="nextQuestion()">Навбатӣ →</button>
+    </div>
+
+    <div id="output"></div>
+    <div id="error"></div>
+
     <script>
-        const translations = {
-            tg: {
-                title: "Хонандаи Пинӣини Хитойӣ",
-                langLabel: "Забонро интихоб кунед:",
-                inputLabel: "Матни хитоиро ворид кунед:",
-                convertBtn: "Ба пинӣин табдил диҳед",
-                funMessages: [
-                    "Ха-ха, акнун хитоиро мисли шиновар хонда метавонӣ! 🏊‍♂️",
-                    "Пинияш – ҷодугар! Тонҳо ҳатто хандовар шуданд 🎵",
-                    "Ту акнун устоди забонҳо ҳастӣ! 🌟",
-                    "Офарин! Ҳоло ҳар иероглифро мисли дӯст медонӣ 😎"
+        // Маълумот барои дарсҳо
+        const lessons = [
+            { // Дарси 1
+                title: "Саломгуӣ",
+                questions: [
+                    { chinese: "你好", pinyin: "nǐ hǎo", question: "Чӣ тавр \"Салом\" мегӯянд?", options: ["zài jiàn", "nǐ hǎo", "xiè xiè"], correct: 1 },
+                    { chinese: "谢谢", pinyin: "xiè xiè", question: "Чӣ тавр \"Раҳмат\" мегӯянд?", options: ["xiè xiè", "duì bù qǐ", "nǐ hǎo"], correct: 0 },
+                    { chinese: "再见", pinyin: "zài jiàn", question: "Чӣ тавр \"Хайр\" мегӯянд?", options: ["nǐ hǎo", "zài jiàn", "wǒ ài nǐ"], correct: 1 }
                 ]
             },
-            en: {
-                title: "Chinese Pinyin Reader",
-                langLabel: "Select Language:",
-                inputLabel: "Enter Chinese Text:",
-                convertBtn: "Convert to Pinyin",
-                funMessages: [
-                    "Haha, now you can read Chinese like a pro! 😂",
-                    "Pinyin magic activated! 🎉",
-                    "You're officially a language ninja! 🥷"
+            { // Дарси 2
+                title: "Оила",
+                questions: [
+                    { chinese: "家庭", pinyin: "jiā tíng", question: "Чӣ тавр \"Оила\" мегӯянд?", options: ["péng you", "jiā tíng", "xué xiào"], correct: 1 },
+                    { chinese: "妈妈", pinyin: "mā ma", question: "Чӣ тавр \"Модар\" мегӯянд?", options: ["bà ba", "mā ma", "gē ge"], correct: 1 },
+                    { chinese: "爸爸", pinyin: "bà ba", question: "Чӣ тавр \"Падар\" мегӯянд?", options: ["bà ba", "jiě jie", "dì di"], correct: 0 }
                 ]
-            },
-            ru: {
-                title: "Чтец китайских иероглифов с пиньинь",
-                langLabel: "Выберите язык:",
-                inputLabel: "Введите китайский текст:",
-                convertBtn: "Преобразовать в пиньинь",
-                funMessages: [
-                    "Ха-ха, теперь читаешь китайский как профи! 😂",
-                    "Магия пиньинь! 🎉",
-                    "Ты теперь мастер языков! 🌟"
-                ]
-            },
-            // Агар хоҳӣ боқимонда забонҳоро пурра кунӣ — аз коди аввалини худ гирифта илова кун
-            // ҳозир фақат tg, en, ru кор мекунанд, боқимонда ба tg бармегарданд
-        };
+            }
+        ];
 
-        function changeLanguage() {
-            const lang = document.getElementById('language').value;
-            const trans = translations[lang] || translations.tg;
-            document.getElementById('title').textContent = trans.title || "Хонандаи Пинӣини Хитойӣ";
-            document.getElementById('lang-label').textContent = trans.langLabel || "Забонро интихоб кунед:";
-            document.getElementById('input-label').textContent = trans.inputLabel || "Матни хитоиро ворид кунед:";
-            document.getElementById('convert-btn').textContent = trans.convertBtn || "Ба пинӣин табдил диҳед";
+        let currentLesson = -1;
+        let currentQuestion = 0;
+        let xp = parseInt(localStorage.getItem('pinyin_xp') || '0');
+        let streak = parseInt(localStorage.getItem('pinyin_streak') || '0');
+        let hearts = 5;
+        let lastPractice = localStorage.getItem('pinyin_last') || '';
+
+        const today = new Date().toDateString();
+
+        if (lastPractice !== today) {
+            streak = lastPractice === new Date(Date.now() - 86400000).toDateString() ? streak + 1 : 1;
+            localStorage.setItem('pinyin_streak', streak);
+            localStorage.setItem('pinyin_last', today);
         }
 
-        function setExample(text) {
-            document.getElementById('input').value = text;
-            convertText();
+        function updateProfile() {
+            document.getElementById('xp').textContent = xp;
+            document.getElementById('level').textContent = Math.floor(xp / 100) + 1;
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('hearts').textContent = hearts;
+            localStorage.setItem('pinyin_xp', xp);
         }
 
-        function clearInput() {
-            document.getElementById('input').value = '';
-            document.getElementById('output').innerHTML = '';
-            document.getElementById('fun-message').textContent = '';
+        function startLesson(idx) {
+            currentLesson = idx;
+            currentQuestion = 0;
+            hearts = 5;
+            document.getElementById('quiz').style.display = 'block';
+            document.getElementById('error').textContent = '';
+            showQuestion();
+            updateProfile();
         }
 
-        function convertText() {
-            const input = document.getElementById('input').value.trim();
-            const output = document.getElementById('output');
-            const funDiv = document.getElementById('fun-message');
-            const lang = document.getElementById('language').value;
-            const trans = translations[lang] || translations.tg;
-
-            if (!input) {
-                output.innerHTML = '';
-                funDiv.textContent = '';
+        function showQuestion() {
+            const qData = lessons[currentLesson].questions[currentQuestion];
+            if (!qData || hearts <= 0) {
+                endLesson();
                 return;
             }
 
-            try {
-                const htmlOutput = pinyinPro.html(input, {
-                    toneType: 'num',          // барои data-tone → рангҳо кор мекунанд
-                    type: 'html',
-                    nonChinese: 'wrap'
-                });
-                output.innerHTML = htmlOutput;
-
-                const randomFun = trans.funMessages[Math.floor(Math.random() * trans.funMessages.length)];
-                funDiv.textContent = randomFun;
-            } catch (e) {
-                output.innerHTML = '<p style="color:red;">Хато: Матнро дуруст ворид кунед (чинӣ бошад беҳтар аст).</p>';
-            }
+            document.getElementById('question').textContent = qData.question + "  (" + qData.chinese + ")";
+            let html = '';
+            qData.options.forEach((opt, i) => {
+                html += `<div class="option" onclick="checkAnswer(\( {i})"> \){opt}</div>`;
+            });
+            document.getElementById('options').innerHTML = html;
         }
 
-        // Default
-        document.getElementById('language').value = 'tg';
-        changeLanguage();
+        function checkAnswer(selected) {
+            const correctIdx = lessons[currentLesson].questions[currentQuestion].correct;
+            if (selected === correctIdx) {
+                xp += 10;
+                document.getElementById('error').textContent = 'Афарин! ✓';
+            } else {
+                hearts--;
+                document.getElementById('error').textContent = 'Нодуруст ✗  Дуруст: ' + lessons[currentLesson].questions[currentQuestion].pinyin;
+            }
+            updateProfile();
+            currentQuestion++;
+            showQuestion();
+        }
+
+        function endLesson() {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('output').innerHTML = hearts > 0 
+                ? `<strong>Дарс анҷом ёфт! +${xp % 10 === 0 ? 10 : ''} нуқта</strong>` 
+                : '<strong>Дилҳо тамом шуд. Кӯшиш кунед дубора!</strong>';
+            updateProfile();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+        }
+
+        updateProfile(); // аввал бор нишон медиҳад
     </script>
 </body>
 </html>
